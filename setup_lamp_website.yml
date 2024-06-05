@@ -1,0 +1,10 @@
+---
+- name: Setup LAMP stack and configure website
+  hosts: webservers
+  become: yes
+  
+  roles:
+    - apache
+    - mysql
+    - php
+    - website

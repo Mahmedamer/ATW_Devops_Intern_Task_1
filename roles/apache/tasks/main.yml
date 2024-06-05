@@ -1,0 +1,22 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    
+- name: Install Apache
+  apt:
+    name: apache2
+    state: present
+
+- name: Deploy website
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+
+- name: Start and enable Apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes

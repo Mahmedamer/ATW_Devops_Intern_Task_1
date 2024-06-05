@@ -1,0 +1,57 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: Install MySQL
+  apt:
+    name: mysql-server
+    state: present
+
+- name: Start and Enable MySQL
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Install pip3
+  apt:
+    name: pip
+    state: present
+
+- name: Make sure pymysql is present
+  become: true
+  pip:
+    name: pymysql
+    state: present
+
+- name: Set MySQL root password and authentication method
+  command: >
+    mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '{{ mysql_root_password }}';"
+  ignore_errors: yes
+
+- name: Remove anonymous MySQL users
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: '{{ mysql_root_password }}'
+
+- name: Create MySQL database
+  mysql_db:
+    name: '{{ mysql_db_name }}'
+    state: present
+    login_user: root
+    login_password: '{{ mysql_root_password }}'
+
+- name: Create MySQL user
+  mysql_user:
+    name: '{{ mysql_user }}'
+    password: '{{ mysql_password }}'
+    priv: '{{ mysql_db_name }}.*:ALL'
+    state: present
+    login_user: root
+    login_password: '{{ mysql_root_password }}'

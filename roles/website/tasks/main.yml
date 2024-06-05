@@ -1,0 +1,31 @@
+---
+- name: Deploy website
+  copy:
+    src: index.php
+    dest: /var/www/html/index.php
+
+- name: Create DB credentials file
+  copy:
+    dest: /var/www/html/db.php
+    content: "<?php $servername = 'localhost'; $username = '{{ mysql_user }}'; $password = '{{ mysql_password }}'; $dbname = '{{ mysql_db_name }}'; ?>"
+
+- name: Ensure Apache is configured to handle PHP
+  lineinfile:
+    path: /etc/apache2/mods-enabled/dir.conf
+    regexp: '^(\s*DirectoryIndex\s+).*'
+    line: 'DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm'
+
+- name: Set correct permissions for /var/www/html
+  file:
+    path: /var/www/html
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes
+
+- name: Restart Apache
+  service:
+    name: apache2
+    state: restarted
+    enabled: yes
